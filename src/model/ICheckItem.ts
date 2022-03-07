@@ -1,12 +1,12 @@
 import { URL } from "url";
 
-enum Severity {
+export enum Severity {
     High,
     Medium,
     Low
 }
 
-enum Status {
+export enum Status {
     NotVerified,
     Open,
     Fulfilled,
@@ -24,5 +24,5 @@ export interface ICheckItem {
 }
 
 export interface ICheckItemAnswered extends ICheckItem {
-    Status: Status;
+    Status?: Status;
 }

@@ -7,6 +7,7 @@ import { mergeStyleSets } from '@fluentui/react/lib/Styling';
 import { ComboBox, TooltipHost } from '@fluentui/react';
 import { ICheckItem, ICheckItemAnswered } from '../model/ICheckItem';
 import TemplateServiceInstance from '../service/TemplateService';
+import { IChecklistDocument } from '../model/IChecklistDocument';
 
 const classNames = mergeStyleSets({
   fileIconHeaderIcon: {
@@ -73,22 +74,26 @@ export interface Ft3asChecklistState {
 //   fileSizeRaw: number;
 // }
 
-export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
+interface Ft3asChecklistProps{
+  checklistDoc?: IChecklistDocument
+}
+
+export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asChecklistState> {
   private _selection: Selection;
   private _allItems: ICheckItemAnswered[];
 
-  constructor(props: {}) {
+  constructor(props: Ft3asChecklistProps) {
     super(props);
 
-    this._allItems = _generateDocuments();
-    console.log('ctrtor ' + this._allItems.length);
+    this._allItems = props.checklistDoc?.items ?? [];
+    console.log('cnstrctr ' + this._allItems.length);
 
     const columns: IColumn[] = [
       {
         key: 'category',
         name: 'Category',
         ariaLabel: 'Category',
-        fieldName: 'Category',
+        fieldName: 'category',
         minWidth: 210,
         maxWidth: 350,
         isRowHeader: true,
@@ -100,7 +105,7 @@ export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
       {
         key: 'subcategory',
         name: 'Subcategory',
-        fieldName: 'Subcategory',
+        fieldName: 'subcategory',
         minWidth: 210,
         maxWidth: 350,
         isRowHeader: true,
@@ -116,7 +121,7 @@ export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
       {
         key: 'text',
         name: 'Text',
-        fieldName: 'Text',
+        fieldName: 'text',
         minWidth: 210,
         maxWidth: 350,
         isResizable: true,
@@ -138,7 +143,7 @@ export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
       {
         key: 'severity',
         name: 'Severity',
-        fieldName: 'Severity',
+        fieldName: 'severity',
         minWidth: 70,
         maxWidth: 90,
         isResizable: true,
@@ -149,7 +154,7 @@ export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
       {
         key: 'link',
         name: 'Link',
-        fieldName: 'Link',
+        fieldName: 'link',
         minWidth: 210,
         maxWidth: 360,
         isResizable: true,
@@ -160,7 +165,7 @@ export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
       {
         key: 'status',
         name: 'Status',
-        fieldName: 'Status',
+        fieldName: 'status',
         minWidth: 70,
         maxWidth: 90,
         isResizable: true,
@@ -210,7 +215,7 @@ export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
             offText="Normal"
             styles={controlStyles}
           /> */}
-          <TextField label="Filter by name:" onChange={this._onChangeText} styles={controlStyles} />
+          <TextField label="Filter by name:" onChange={this._onChangeText} styles={controlStyles} readOnly={false} />
           <Announced message={`Number of items after filter applied: ${items.length}.`} />
         </div>
         <div className={classNames.selectionDetails}>{selectionDetails}</div>
