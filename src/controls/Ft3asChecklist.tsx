@@ -4,7 +4,9 @@ import { Announced } from '@fluentui/react/lib/Announced';
 import { DetailsList, DetailsListLayoutMode, Selection, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
 import { MarqueeSelection } from '@fluentui/react/lib/MarqueeSelection';
 import { mergeStyleSets } from '@fluentui/react/lib/Styling';
-import { TooltipHost } from '@fluentui/react';
+import { ComboBox, TooltipHost } from '@fluentui/react';
+import { ICheckItem, ICheckItemAnswered } from '../model/ICheckItem';
+import TemplateServiceInstance from '../service/TemplateService';
 
 const classNames = mergeStyleSets({
   fileIconHeaderIcon: {
@@ -49,60 +51,56 @@ const controlStyles = {
   },
 };
 
-export interface IDetailsListDocumentsExampleState {
+export interface Ft3asChecklistState {
   columns: IColumn[];
-  items: IDocument[];
+  items: ICheckItemAnswered[];
   selectionDetails: string;
   isModalSelection: boolean;
   isCompactMode: boolean;
   announcedMessage?: string;
 }
 
-export interface IDocument {
-  key: string;
-  name: string;
-  value: string;
-  iconName: string;
-  fileType: string;
-  modifiedBy: string;
-  dateModified: string;
-  dateModifiedValue: number;
-  fileSize: string;
-  fileSizeRaw: number;
-}
+// export interface IDocument {
+//   key: string;
+//   name: string;
+//   value: string;
+//   iconName: string;
+//   fileType: string;
+//   modifiedBy: string;
+//   dateModified: string;
+//   dateModifiedValue: number;
+//   fileSize: string;
+//   fileSizeRaw: number;
+// }
 
-export class Ft3asChecklist extends React.Component<{}, IDetailsListDocumentsExampleState> {
+export class Ft3asChecklist extends React.Component<{}, Ft3asChecklistState> {
   private _selection: Selection;
-  private _allItems: IDocument[];
+  private _allItems: ICheckItemAnswered[];
 
   constructor(props: {}) {
     super(props);
 
     this._allItems = _generateDocuments();
+    console.log('ctrtor ' + this._allItems.length);
 
     const columns: IColumn[] = [
       {
-        key: 'column1',
-        name: 'Main area',
-        className: classNames.fileIconCell,
-        iconClassName: classNames.fileIconHeaderIcon,
-        ariaLabel: 'Main area',
-        iconName: 'Page',
-        isIconOnly: true,
-        fieldName: 'name',
-        minWidth: 16,
-        maxWidth: 16,
+        key: 'category',
+        name: 'Category',
+        ariaLabel: 'Category',
+        fieldName: 'Category',
+        minWidth: 210,
+        maxWidth: 350,
+        isRowHeader: true,
+        isResizable: true,
+        isSorted: true,
+        data: 'string',
         onColumnClick: this._onColumnClick,
-        onRender: (item: IDocument) => (
-          <TooltipHost content={`${item.fileType} file`}>
-            <img src={item.iconName} className={classNames.fileIconImg} alt={`${item.fileType} file icon`} />
-          </TooltipHost>
-        ),
       },
       {
-        key: 'column2',
-        name: 'Name',
-        fieldName: 'name',
+        key: 'subcategory',
+        name: 'Subcategory',
+        fieldName: 'Subcategory',
         minWidth: 210,
         maxWidth: 350,
         isRowHeader: true,
@@ -116,47 +114,59 @@ export class Ft3asChecklist extends React.Component<{}, IDetailsListDocumentsExa
         isPadded: true,
       },
       {
-        key: 'column3',
-        name: 'Date Modified',
-        fieldName: 'dateModifiedValue',
-        minWidth: 70,
-        maxWidth: 90,
+        key: 'text',
+        name: 'Text',
+        fieldName: 'Text',
+        minWidth: 210,
+        maxWidth: 350,
         isResizable: true,
         onColumnClick: this._onColumnClick,
         data: 'number',
-        onRender: (item: IDocument) => {
-          return <span>{item.dateModified}</span>;
-        },
+      },
+      {
+        key: 'ha',
+        name: 'HA',
+        fieldName: 'ha',
+        minWidth: 70,
+        maxWidth: 90,
+        isResizable: true,
+        isCollapsible: true,
+        data: 'number',
+        onColumnClick: this._onColumnClick,
         isPadded: true,
       },
       {
-        key: 'column4',
-        name: 'Modified By',
-        fieldName: 'modifiedBy',
+        key: 'severity',
+        name: 'Severity',
+        fieldName: 'Severity',
         minWidth: 70,
         maxWidth: 90,
         isResizable: true,
         isCollapsible: true,
         data: 'string',
         onColumnClick: this._onColumnClick,
-        onRender: (item: IDocument) => {
-          return <span>{item.modifiedBy}</span>;
-        },
-        isPadded: true,
       },
       {
-        key: 'column5',
-        name: 'File Size',
-        fieldName: 'fileSizeRaw',
+        key: 'link',
+        name: 'Link',
+        fieldName: 'Link',
+        minWidth: 210,
+        maxWidth: 360,
+        isResizable: true,
+        isCollapsible: true,
+        data: 'url',
+        onColumnClick: this._onColumnClick,
+      },
+      {
+        key: 'status',
+        name: 'Status',
+        fieldName: 'Status',
         minWidth: 70,
         maxWidth: 90,
         isResizable: true,
         isCollapsible: true,
-        data: 'number',
-        onColumnClick: this._onColumnClick,
-        onRender: (item: IDocument) => {
-          return <span>{item.fileSize}</span>;
-        },
+        data: 'string',
+        onColumnClick: this._onColumnClick
       },
     ];
 
@@ -243,7 +253,7 @@ export class Ft3asChecklist extends React.Component<{}, IDetailsListDocumentsExa
     );
   }
 
-  public componentDidUpdate(previousProps: any, previousState: IDetailsListDocumentsExampleState) {
+  public componentDidUpdate(previousProps: any, previousState: Ft3asChecklistState) {
     if (previousState.isModalSelection !== this.state.isModalSelection && !this.state.isModalSelection) {
       this._selection.setAllSelected(false);
     }
@@ -263,7 +273,7 @@ export class Ft3asChecklist extends React.Component<{}, IDetailsListDocumentsExa
 
   private _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text?: string): void => {
     this.setState({
-      items: text ? this._allItems.filter(i => i.name.toLowerCase().indexOf(text) > -1) : this._allItems,
+      items: text ? this._allItems.filter(i => i.Text.toLowerCase().indexOf(text) > -1) : this._allItems,
     });
   };
 
@@ -278,7 +288,7 @@ export class Ft3asChecklist extends React.Component<{}, IDetailsListDocumentsExa
       case 0:
         return 'No items selected';
       case 1:
-        return '1 item selected: ' + (this._selection.getSelection()[0] as IDocument).name;
+        return '1 item selected: ' + (this._selection.getSelection()[0] as ICheckItemAnswered).Text;
       default:
         return `${selectionCount} items selected`;
     }
@@ -315,32 +325,40 @@ function _copyAndSort<T>(items: T[], columnKey: string, isSortedDescending?: boo
 }
 
 function _generateDocuments() {
-  const items: IDocument[] = [];
-  for (let i = 0; i < 500; i++) {
-    const randomDate = _randomDate(new Date(2012, 0, 1), new Date());
-    const randomFileSize = _randomFileSize();
-    const randomFileType = _randomFileIcon();
-    let fileName = _lorem(2);
-    fileName = fileName.charAt(0).toUpperCase() + fileName.slice(1).concat(`.${randomFileType.docType}`);
-    let userName = _lorem(2);
-    userName = userName
-      .split(' ')
-      .map((name: string) => name.charAt(0).toUpperCase() + name.slice(1))
-      .join(' ');
-    items.push({
-      key: i.toString(),
-      name: fileName,
-      value: fileName,
-      iconName: randomFileType.url,
-      fileType: randomFileType.docType,
-      modifiedBy: userName,
-      dateModified: randomDate.dateFormatted,
-      dateModifiedValue: randomDate.value,
-      fileSize: randomFileSize.value,
-      fileSizeRaw: randomFileSize.rawSize,
-    });
-  }
-  return items;
+  let result: ICheckItemAnswered[] = [];
+  TemplateServiceInstance.openTemplate('https://raw.githubusercontent.com/Azure/review-checklists/main/checklists/aks_checklist.en.json')
+    .then(templateDoc => { 
+      result = templateDoc.items;
+      console.log(result.length);
+     })
+    .catch(reason => console.error(reason));
+  return result;
+  // const items: ICheckItemAnswered[] = [];
+  // for (let i = 0; i < 500; i++) {
+  //   const randomDate = _randomDate(new Date(2012, 0, 1), new Date());
+  //   const randomFileSize = _randomFileSize();
+  //   const randomFileType = _randomFileIcon();
+  //   let fileName = _lorem(2);
+  //   fileName = fileName.charAt(0).toUpperCase() + fileName.slice(1).concat(`.${randomFileType.docType}`);
+  //   let userName = _lorem(2);
+  //   userName = userName
+  //     .split(' ')
+  //     .map((name: string) => name.charAt(0).toUpperCase() + name.slice(1))
+  //     .join(' ');
+  //   items.push({
+  //     key: i.toString(),
+  //     name: fileName,
+  //     value: fileName,
+  //     iconName: randomFileType.url,
+  //     fileType: randomFileType.docType,
+  //     modifiedBy: userName,
+  //     dateModified: randomDate.dateFormatted,
+  //     dateModifiedValue: randomDate.value,
+  //     fileSize: randomFileSize.value,
+  //     fileSizeRaw: randomFileSize.rawSize,
+  //   });
+  // }
+  // return items;
 }
 
 function _randomDate(start: Date, end: Date): { value: number; dateFormatted: string } {
