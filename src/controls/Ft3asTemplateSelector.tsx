@@ -1,51 +1,37 @@
 import { DefaultButton, Dropdown, IDropdownOption, Panel, PrimaryButton } from "@fluentui/react";
-import { useBoolean } from "@fluentui/react-hooks";
-import { FormEvent, Props, useCallback, useEffect, useState } from "react";
-import TemplateServiceInstance from "../service/TemplateService";
+import { FormEvent, useCallback, useState } from "react";
 
 const buttonStyles = { root: { marginRight: 8 } };
 
 interface Ft3AsTemplateSelectorProps {
     isOpen: boolean;
     availableTemplates: string[];
-    onTemplateSelected: (templateUrl: string) => void;
+    onTemplateSelected: (templateUrl?: string) => void;
     onClose: () => void;
 }
 export default function Ft3AsTemplateSelector(props: Ft3AsTemplateSelectorProps) {
-    
-    const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(props.isOpen);
+    const { isOpen } = props;
     // const [availableTemplates, setAvailableTemplates] = useState<IDropdownOption[]>([]);
-    const availableTemplates= props.availableTemplates.map<IDropdownOption>(t => {
+    const availableTemplates = props.availableTemplates.map<IDropdownOption>(t => {
         return {
             key: t, text: t
         }
     });
     const [selectedItem, setSelectedItem] = useState<IDropdownOption>();
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         const templates = await TemplateServiceInstance.getAvailableTemplates();
-    //         // TODO: ideally this mapping should return as key full template url and as text the simplified name
-    //         const options = templates.map<IDropdownOption>((template: string) => {
-    //             return {
-    //                 key: template, text: template
-    //             }
-    //         });
-    //         setAvailableTemplates(options);
-    //     }
-    //     fetchData().catch(reason => console.error(reason));
-    // }, []);
+    const onOk = () => {
+        props.onTemplateSelected(selectedItem?.key as string | undefined);
+        // props.onClose();
+    }
 
     const onRenderFooterContent = useCallback(
         () => (
             <div>
-                <PrimaryButton onClick={dismissPanel} styles={buttonStyles}>
-                    Save
+                <PrimaryButton onClick={onOk} styles={buttonStyles}>
+                    Load template
                 </PrimaryButton>
-                <DefaultButton onClick={dismissPanel}>Cancel</DefaultButton>
+                <DefaultButton onClick={props.onClose}>Cancel</DefaultButton>
             </div>
-        ),
-        [dismissPanel],
-    );
+        ), [onOk, props.onClose]);
 
     const onChange = (event: FormEvent<HTMLDivElement>, item?: IDropdownOption): void => {
         setSelectedItem(item);
@@ -53,18 +39,18 @@ export default function Ft3AsTemplateSelector(props: Ft3AsTemplateSelectorProps)
 
     return (<Panel
         isOpen={isOpen}
-        onDismiss={dismissPanel}
+        onDismiss={props.onClose}
         headerText="Select a checklist template"
         closeButtonAriaLabel="Close"
-        // onRenderFooterContent={onRenderFooterContent}
-        // isFooterAtBottom={true}
-        >
+        onRenderFooterContent={onRenderFooterContent}
+        isFooterAtBottom={true}
+    >
         <p>Template list</p>
-        {/* <Dropdown
+        <Dropdown
             label="Select template"
             selectedKey={selectedItem ? selectedItem.key : undefined}
             options={availableTemplates}
             placeholder="Select a template"
-            onChange={onChange} /> */}
+            onChange={onChange} />
     </Panel>)
 }

@@ -14,15 +14,15 @@ export enum Status {
 }
 
 export interface ICheckItem {
-    Category: string;
-    Subcategory: string;
-    Text: string;
-    Guid: string;
+    category: string;
+    subcategory: string;
+    text: string;
+    guid: string;
     ha: number;
-    Severity: Severity;
-    Link?: URL;
+    severity: Severity;
+    link?: URL;
 }
 
 export interface ICheckItemAnswered extends ICheckItem {
-    Status?: Status;
+    status?: Status;
 }

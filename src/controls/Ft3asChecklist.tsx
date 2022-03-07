@@ -4,8 +4,7 @@ import { Announced } from '@fluentui/react/lib/Announced';
 import { DetailsList, DetailsListLayoutMode, Selection, SelectionMode, IColumn } from '@fluentui/react/lib/DetailsList';
 import { MarqueeSelection } from '@fluentui/react/lib/MarqueeSelection';
 import { mergeStyleSets } from '@fluentui/react/lib/Styling';
-import { ComboBox, TooltipHost } from '@fluentui/react';
-import { ICheckItem, ICheckItemAnswered } from '../model/ICheckItem';
+import { ICheckItemAnswered } from '../model/ICheckItem';
 import TemplateServiceInstance from '../service/TemplateService';
 import { IChecklistDocument } from '../model/IChecklistDocument';
 
@@ -74,19 +73,18 @@ export interface Ft3asChecklistState {
 //   fileSizeRaw: number;
 // }
 
-interface Ft3asChecklistProps{
+interface Ft3asChecklistProps {
   checklistDoc?: IChecklistDocument
 }
 
 export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asChecklistState> {
   private _selection: Selection;
-  private _allItems: ICheckItemAnswered[];
+  // private _allItems: ICheckItemAnswered[];
 
   constructor(props: Ft3asChecklistProps) {
     super(props);
 
-    this._allItems = props.checklistDoc?.items ?? [];
-    console.log('cnstrctr ' + this._allItems.length);
+    console.log('items ' + props.checklistDoc?.items.length);
 
     const columns: IColumn[] = [
       {
@@ -183,8 +181,9 @@ export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asCh
       },
     });
 
+    console.log('check items ' + this.props.checklistDoc?.items.length);
     this.state = {
-      items: this._allItems,
+      items: this.props.checklistDoc?.items ?? [],
       columns: columns,
       selectionDetails: this._getSelectionDetails(),
       isModalSelection: false,
@@ -276,9 +275,20 @@ export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asCh
     this.setState({ isModalSelection: checked ?? false });
   };
 
+  private doFilter(item: ICheckItemAnswered, filterText: string): boolean {
+    if (item && (item.category.includes(filterText)
+      || item.subcategory.includes(filterText)
+      || item.text.includes(filterText)
+      || item.severity.toString().includes(filterText))) {
+      return true;
+    }
+    return false;
+  }
+
   private _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text?: string): void => {
+    const filteredItems = text ? this.props.checklistDoc?.items.filter(item => this.doFilter(item, text)) : this.props.checklistDoc?.items;
     this.setState({
-      items: text ? this._allItems.filter(i => i.Text.toLowerCase().indexOf(text) > -1) : this._allItems,
+      items: filteredItems ?? []
     });
   };
 
@@ -293,7 +303,7 @@ export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asCh
       case 0:
         return 'No items selected';
       case 1:
-        return '1 item selected: ' + (this._selection.getSelection()[0] as ICheckItemAnswered).Text;
+        return '1 item selected: ' + (this._selection.getSelection()[0] as ICheckItemAnswered).text;
       default:
         return `${selectionCount} items selected`;
     }
@@ -332,10 +342,10 @@ function _copyAndSort<T>(items: T[], columnKey: string, isSortedDescending?: boo
 function _generateDocuments() {
   let result: ICheckItemAnswered[] = [];
   TemplateServiceInstance.openTemplate('https://raw.githubusercontent.com/Azure/review-checklists/main/checklists/aks_checklist.en.json')
-    .then(templateDoc => { 
+    .then(templateDoc => {
       result = templateDoc.items;
       console.log(result.length);
-     })
+    })
     .catch(reason => console.error(reason));
   return result;
   // const items: ICheckItemAnswered[] = [];

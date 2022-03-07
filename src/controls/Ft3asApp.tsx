@@ -1,6 +1,5 @@
 import { FocusZone, IStackStyles, IStackTokens, Stack } from "@fluentui/react";
 import { useEffect, useState } from "react";
-import { isTemplateExpression } from "typescript";
 import { ICheckItemAnswered, Status } from "../model/ICheckItem";
 import { IChecklistDocument } from "../model/IChecklistDocument";
 import TemplateServiceInstance from "../service/TemplateService";
@@ -28,7 +27,7 @@ export default function Ft3asApp() {
         const fetchData = async () => {
             await changeTemplate('https://raw.githubusercontent.com/Azure/review-checklists/main/checklists/aks_checklist.en.json');
             const templates = await TemplateServiceInstance.getAvailableTemplates();
-            console.log(templates.length);
+            console.log('template count ' + templates.length);
             setAvailableTemplates(templates);
         }
         fetchData()
@@ -38,14 +37,35 @@ export default function Ft3asApp() {
             })
     }, []);
 
+    const onTemplateSelected = (templateUrl?: string) => {
+        if (templateUrl) {
+            changeTemplate(templateUrl)
+                .then(() => console.log(templateUrl + ' loaded?'))
+                .catch(reason => console.error(reason));
+        } else {
+            console.log('no template?');
+        }
+        setShowSelectTemplate(false);
+    }
     const changeTemplate = async (templateUrl: string) => {
         const doc = await TemplateServiceInstance.openTemplate(templateUrl);
+        // const defaultedDoc = {
+        //     ...doc,
+        //     items: doc.items.map<ICheckItemAnswered>((i: ICheckItemAnswered) => {
+        //         const defaultedI: ICheckItemAnswered = {
+        //             ...i,
+        //             Status: i.Status ?? Status.NotVerified
+        //         }
+        //         return defaultedI;
+        //     })
+        // };
+
         setChecklistDoc({
             ...doc,
             items: doc.items.map<ICheckItemAnswered>((i: ICheckItemAnswered) => {
                 const defaultedI: ICheckItemAnswered = {
                     ...i,
-                    Status: i.Status ?? Status.NotVerified
+                    status: i.status ?? Status.NotVerified
                 }
                 return defaultedI;
             })
@@ -54,18 +74,18 @@ export default function Ft3asApp() {
 
     return (
         <Stack verticalFill styles={stackStyles} tokens={stackTokens}>
-            <Ft3asToolbar onSelectTemplateClick={e => { 
-                alert('pako');
-                setShowSelectTemplate(true);
-            }}></Ft3asToolbar>
+            <Ft3asToolbar
+                onSelectTemplateClick={e => {
+                    setShowSelectTemplate(true);
+                }} />
             <FocusZone>
                 <Ft3asChecklist checklistDoc={checklistDoc}></Ft3asChecklist>
             </FocusZone>
             <Ft3AsTemplateSelector
                 availableTemplates={availableTemplates}
                 isOpen={showSelectTemplate}
-                onTemplateSelected={changeTemplate}
-                onClose={() => setShowSelectTemplate(false)} />
+                onTemplateSelected={onTemplateSelected}
+                onClose={() => { alert('close?'); setShowSelectTemplate(false); }} />
         </Stack>
     );
 

@@ -1,4 +1,3 @@
-import { ICheckItemAnswered } from "../model/ICheckItem";
 import { IChecklistDocument } from "../model/IChecklistDocument";
 
 class TemplateService {
