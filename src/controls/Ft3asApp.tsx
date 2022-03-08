@@ -49,16 +49,6 @@ export default function Ft3asApp() {
     }
     const changeTemplate = async (templateUrl: string) => {
         const doc = await TemplateServiceInstance.openTemplate(templateUrl);
-        // const defaultedDoc = {
-        //     ...doc,
-        //     items: doc.items.map<ICheckItemAnswered>((i: ICheckItemAnswered) => {
-        //         const defaultedI: ICheckItemAnswered = {
-        //             ...i,
-        //             Status: i.Status ?? Status.NotVerified
-        //         }
-        //         return defaultedI;
-        //     })
-        // };
 
         setChecklistDoc({
             ...doc,
@@ -71,6 +61,7 @@ export default function Ft3asApp() {
             })
         });
     }
+    // useEffect(()=>{setChecklistDoc(checklistDoc)}, [checklistDoc]);
 
     return (
         <Stack verticalFill styles={stackStyles} tokens={stackTokens}>

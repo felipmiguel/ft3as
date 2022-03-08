@@ -7,6 +7,7 @@ import { mergeStyleSets } from '@fluentui/react/lib/Styling';
 import { ICheckItemAnswered } from '../model/ICheckItem';
 import TemplateServiceInstance from '../service/TemplateService';
 import { IChecklistDocument } from '../model/IChecklistDocument';
+import { Label } from '@fluentui/react';
 
 const classNames = mergeStyleSets({
   fileIconHeaderIcon: {
@@ -190,6 +191,14 @@ export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asCh
       isCompactMode: false,
       announcedMessage: undefined,
     };
+    // this.setState(this.state);
+  }
+
+  public componentWillReceiveProps(props: Ft3asChecklistProps) {
+    console.log('receiving properties');
+    this.setState({
+      items: props.checklistDoc?.items ?? []
+    });
   }
 
   public render() {
@@ -219,6 +228,7 @@ export class Ft3asChecklist extends React.Component<Ft3asChecklistProps, Ft3asCh
         </div>
         <div className={classNames.selectionDetails}>{selectionDetails}</div>
         <Announced message={selectionDetails} />
+        <Label>{`Total: ${this.props.checklistDoc?.items.length} Filtered: ${items.length} `}</Label>
         {announcedMessage ? <Announced message={announcedMessage} /> : undefined}
         {isModalSelection ? (
           <MarqueeSelection selection={this._selection}>
